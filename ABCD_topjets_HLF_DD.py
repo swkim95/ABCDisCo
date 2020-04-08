@@ -126,7 +126,7 @@ for alpha in alphalist:
     optimizer2 = torch.optim.Adam(net2.parameters())
 
     output1,output2,labels=train_model(200,1e-3,net1,net2,optimizer1,optimizer2,train_loader,val_loader
-                          ,decorr_mode='dist_unbiased',alpha=alpha
+                          ,decorr_mode='dist_unbiased2',alpha=alpha
                           ,logfile=logfile)
 
 
