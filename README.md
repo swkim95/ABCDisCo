@@ -6,9 +6,10 @@ This repository accompanies the studies reported in **T. Aarrestad *et al.*, "AB
 
 - `ABCD_topjets_HLF_DD.py`, `model_ABCD_2NN.py`, `data_loader.py`, `networks.py`, `disco.py`, `evaluation.py`: reference scripts used to produce the Double-DisCo baselines published in the paper.
 - `topsample_*_tau.dat.gz`: reduced CMS top-tagging high-level feature (HLF) samples used throughout the examples.
-- `notebook/ABCDisCo_tutorial.ipynb`: end-to-end tutorial notebook that mirrors the training/validation pipeline while adding diagnostics and QML hooks.
+- `notebook/ABCDisCo_single_disco_tutorial.ipynb`: single-network DisCo walkthrough that reproduces `ABCD_topjets_HLF_mD.py` before introducing mass decorrelation with optional PennyLane backends.
+- `notebook/ABCDisCo_tutorial.ipynb`: double-network DisCo tutorial that mirrors `ABCD_topjets_HLF_DD.py` with dual heads, mutual decorrelation, and extended diagnostics.
 
-## Running the tutorial notebook
+## Running the tutorial notebooks
 
 1. **Install dependencies** (CPU-friendly defaults):
    ```bash
@@ -18,22 +19,23 @@ This repository accompanies the studies reported in **T. Aarrestad *et al.*, "AB
    pip install pennylane pennylane-lightning
    pip install pyhf
    ```
-2. **Launch the notebook** from the repository root:
+2. **Launch a notebook** from the repository root:
    ```bash
+   # Single-DisCo baseline (mass decorrelation only)
+   jupyter notebook notebook/ABCDisCo_single_disco_tutorial.ipynb
+
+   # Double-DisCo (dual discriminants with mutual decorrelation)
    jupyter notebook notebook/ABCDisCo_tutorial.ipynb
    ```
-3. **Execute cells sequentially.** Each section cites the corresponding reference script:
-   - *Configuration & data loading* reproduce `ABCD_topjets_HLF_DD.py` (lines 69–129) and `data_loader.py` (lines 1–63), including the global min–max scaling applied to all HLFs.
-   - *Model construction* wraps `networks.DNNclassifier` (lines 8–78) inside Torch and PennyLane backends, maintaining interface compatibility with the classical Double-DisCo training loop.
-   - *Loss & training* adapt `model_ABCD_2NN.py` (lines 29–208) and re-use the distance-correlation penalties from `disco.py` (lines 14–118).
-   - *Evaluation* reproduces the closure metrics from `evaluation.py` (lines 1–141), yielding ROC curves, ABCD closure scans, and Jensen–Shannon divergence versus background rejection.
-4. **Adjust hyperparameters** via the exposed configuration cell:
+3. **Execute cells sequentially.** Each tutorial documents where the code originates:
+   - **Single-DisCo notebook** (`ABCDisCo_single_disco_tutorial.ipynb`) follows `ABCD_topjets_HLF_mD.py` (lines 69–126) and `model.py` (lines 24–170). It emphasises the single score vs. jet-mass decorrelation, JSD scans, and saving `abcdisco_single_disco_model.pt` / `abcdisco_single_disco_scores.parquet`.
+   - **Double-DisCo notebook** (`ABCDisCo_tutorial.ipynb`) mirrors `ABCD_topjets_HLF_DD.py` (lines 69–126) and `model_ABCD_2NN.py` (lines 29–208), adds mutual decorrelation diagnostics, ABCD closure plots, and exports `abcdisco_double_disco_model.pt` / `abcdisco_double_disco_scores.parquet`.
+4. **Adjust hyperparameters** via each configuration cell:
    - Set `FULL_DATASET = True` and `EPOCHS = 200` to match the paper-level statistics (requires multi-hour GPU/CPU time).
-   - Tune `LAMBDA_MUTUAL` in the range 50–200 and optionally `LAMBDA_MASS` to scan decorrelation strengths, as done in the reference sweeps.
-   - Switch `BACKEND = "qml"` (after installing PennyLane) to activate the variational quantum circuit head built on `qml.qnn.TorchLayer`.
-5. **Persist artefacts.** The notebook writes:
-   - `abcdisco_double_disco_model.pt`: trained PyTorch (or hybrid) state dict.
-   - `abcdisco_double_disco_scores.parquet`: inference scores with labels, weights, and jet masses for downstream ABCD or `pyhf` studies.
+   - In the single DisCo notebook, scan `LAMBDA_MASS` between 50 and 400 to study mass sculpting vs. performance.
+   - In the double DisCo notebook, tune `LAMBDA_MUTUAL` (50–200) and `LAMBDA_MASS` to balance mutual and mass decorrelation, as done in the reference sweeps.
+   - Switch `BACKEND = "qml"` (after installing PennyLane) in either notebook to activate the PennyLane variational head via `qml.qnn.TorchLayer`.
+5. **Persist artefacts.** Both notebooks write parquet score tables and PyTorch weight files for downstream ABCD or `pyhf` studies as noted above.
 
 ## Data and reproducibility notes
 
