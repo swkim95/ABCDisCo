@@ -13,7 +13,7 @@ This repository accompanies the studies reported in **T. Aarrestad *et al.*, "AB
 
 1. **Install dependencies** (CPU-friendly defaults):
    ```bash
-   pip install numpy pandas scikit-learn matplotlib tqdm
+   pip install numpy pandas scikit-learn matplotlib tqdm scipy
    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
    # optional backends
    pip install pennylane pennylane-lightning
