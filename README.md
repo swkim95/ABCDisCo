@@ -23,22 +23,43 @@ This repository accompanies the studies reported in **T. Aarrestad *et al.*, "AB
    ```
 
    **Option B: GPU-accelerated installation** (recommended for full statistics and paper-level training):
+   
+   First, verify your CUDA version and load the CUDA toolkit:
+   ```bash
+   # Check GPU driver CUDA version
+   nvidia-smi
+   
+   # On HPC systems with module environment (NERSC, etc.):
+   module load cudatoolkit/12.4  # or cuda/12.4
+   # On local workstations, install CUDA toolkit from: https://developer.nvidia.com/cuda-downloads
+   ```
+   
+   Then install Python packages:
    ```bash
    pip install numpy pandas scikit-learn matplotlib tqdm scipy
-   # PyTorch with CUDA support (check your CUDA version with 'nvcc --version' or 'nvidia-smi')
-   # For CUDA 11.8:
-   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-   # For CUDA 12.1:
-   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-   # For latest CUDA, visit: https://pytorch.org/get-started/locally/
    
-   # optional backends with GPU support
+   # PyTorch with CUDA support (match CUDA version shown in nvidia-smi)
+   # For CUDA 11.7/11.8:
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+   
+   # For CUDA 12.1/12.2:
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+   
+   # For CUDA 12.4 (recommended for exact version matching):
+   pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
+   
+   # For other CUDA versions, visit: https://pytorch.org/get-started/locally/
+   
+   # Optional backends with GPU support
    pip install pennylane
-   pip install pennylane-lightning-gpu  # GPU-accelerated PennyLane backend
+   pip install pennylane-lightning-gpu  # Requires CUDA toolkit (not just PyTorch's bundled runtime)
    pip install pyhf
    ```
    
-   > **Note:** GPU acceleration provides 10–50× speedup for full-dataset training (EPOCHS=200, FULL_DATASET=True). Verify your CUDA version and ensure compatible GPU drivers are installed before choosing Option B.
+   > **Note:** 
+   > - GPU acceleration provides 10–50× speedup for full-dataset training (EPOCHS=200, FULL_DATASET=True).
+   > - PyTorch wheels include CUDA runtime libraries, but `pennylane-lightning-gpu` requires the full CUDA toolkit (with `nvcc`, cuBLAS, etc.).
+   > - Match your PyTorch CUDA version to your driver's maximum supported version shown in `nvidia-smi`.
 2. **Launch a notebook** from the repository root:
    ```bash
    # Single-DisCo baseline (mass decorrelation only)
