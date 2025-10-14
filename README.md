@@ -11,7 +11,9 @@ This repository accompanies the studies reported in **T. Aarrestad *et al.*, "AB
 
 ## Running the tutorial notebooks
 
-1. **Install dependencies** (CPU-friendly defaults):
+1. **Install dependencies**
+
+   **Option A: CPU-friendly installation** (suitable for small-scale experiments):
    ```bash
    pip install numpy pandas scikit-learn matplotlib tqdm scipy
    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
@@ -19,6 +21,24 @@ This repository accompanies the studies reported in **T. Aarrestad *et al.*, "AB
    pip install pennylane pennylane-lightning
    pip install pyhf
    ```
+
+   **Option B: GPU-accelerated installation** (recommended for full statistics and paper-level training):
+   ```bash
+   pip install numpy pandas scikit-learn matplotlib tqdm scipy
+   # PyTorch with CUDA support (check your CUDA version with 'nvcc --version' or 'nvidia-smi')
+   # For CUDA 11.8:
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+   # For CUDA 12.1:
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+   # For latest CUDA, visit: https://pytorch.org/get-started/locally/
+   
+   # optional backends with GPU support
+   pip install pennylane
+   pip install pennylane-lightning-gpu  # GPU-accelerated PennyLane backend
+   pip install pyhf
+   ```
+   
+   > **Note:** GPU acceleration provides 10–50× speedup for full-dataset training (EPOCHS=200, FULL_DATASET=True). Verify your CUDA version and ensure compatible GPU drivers are installed before choosing Option B.
 2. **Launch a notebook** from the repository root:
    ```bash
    # Single-DisCo baseline (mass decorrelation only)
