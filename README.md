@@ -45,8 +45,12 @@ This repository accompanies the studies reported in **T. Aarrestad *et al.*, "AB
    # For CUDA 12.1/12.2:
    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
    
-   # For CUDA 12.4 (recommended for exact version matching):
-   pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
+   # For CUDA 12.4:
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+   
+   # The above commands install the latest PyTorch version for your CUDA.
+   # For specific versions (e.g., for reproducibility), add version numbers:
+   # pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
    
    # For other CUDA versions, visit: https://pytorch.org/get-started/locally/
    

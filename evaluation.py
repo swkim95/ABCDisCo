@@ -54,8 +54,11 @@ def JSDvsR(sigscore,bgscore,bgmass,sigweights=np.empty(0),bgweights=np.empty(0),
     bgweightsp=bgweights[bgscore>cutval]
     bgweightsf=bgweights[bgscore<cutval]
     print('JSDvsR',sigeff,np.sum(sigweights[sigscore>cutval])/np.sum(sigweights))
-    countsp,_=np.histogram(bgp,weights=bgweightsp,range=[minmass,maxmass],bins=nbins,normed=True)
-    countsf,_=np.histogram(bgf,weights=bgweightsf,range=[minmass,maxmass],bins=nbins,normed=True)
+    # Build weighted histograms and normalize to a discrete probability mass function
+    countsp,_=np.histogram(bgp,weights=bgweightsp,range=(minmass,maxmass),bins=nbins)
+    countsf,_=np.histogram(bgf,weights=bgweightsf,range=(minmass,maxmass),bins=nbins)
+    countsp = countsp / (np.sum(countsp) + 1e-12)
+    countsf = countsf / (np.sum(countsf) + 1e-12)
 
     output=[1/(np.sum(bgweightsp)/np.sum(bgweights)),1/JSD(countsp,countsf)]
     
