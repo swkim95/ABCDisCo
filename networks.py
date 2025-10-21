@@ -46,7 +46,49 @@ class DNNclassifier(nn.Module):
         x = F.relu(x)
         return self.classifier(x)
 
-    
+class DNNclassifier_small(nn.Module):
+    """
+    ResNext optimized for the Cifar dataset, as specified in
+    https://arxiv.org/pdf/1611.05431.pdf
+    """
+
+    def __init__(self,ninput,numout):
+        """ Constructor
+        """
+
+        super(DNNclassifier_small, self).__init__()
+
+
+        self.dense_1 = nn.Linear(ninput, 32)
+        self.bn2 = nn.BatchNorm1d(ninput)
+        self.bn64 = nn.BatchNorm1d(32)
+        self.dense_2 = nn.Linear(32, 32)
+        self.dense_3 = nn.Linear(32, 32)
+        self.classifier = nn.Linear(32, numout)
+        init.kaiming_normal(self.classifier.weight)
+
+        for key in self.state_dict():
+            if key.split('.')[-1] == 'weight':
+                if 'conv' in key:
+                    init.kaiming_normal(self.state_dict()[key], mode='fan_out')
+                if 'bn' in key:
+                    self.state_dict()[key][...] = 1
+            elif key.split('.')[-1] == 'bias':
+                self.state_dict()[key][...] = 0
+
+
+
+    def forward(self, x):
+        x = self.dense_1.forward(x)
+        x = F.relu(x)
+        x = self.bn64(x)
+        x = self.dense_2.forward(x)
+        x = F.relu(x)
+        x = self.dense_3.forward(x)
+        x = F.relu(x)
+        return self.classifier(x)
+
+
 class CNNclassifier(nn.Module):
     """
     ResNext optimized for the Cifar dataset, as specified in
