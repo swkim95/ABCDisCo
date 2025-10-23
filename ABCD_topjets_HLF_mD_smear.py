@@ -70,9 +70,9 @@ import glob
 from torch.optim import Optimizer
 
 
-traindata_raw=np.loadtxt('../toptagging/topsample_train_tau.dat',delimiter=',',skiprows=15)
-valdata_raw=np.loadtxt('../toptagging/topsample_val_tau.dat',delimiter=',',skiprows=15)
-testdata_raw=np.loadtxt('../toptagging/topsample_test_tau.dat',delimiter=',',skiprows=15)
+traindata_raw=np.loadtxt('./topsample_train_tau.dat',delimiter=',',skiprows=15)
+valdata_raw=np.loadtxt('./topsample_val_tau.dat',delimiter=',',skiprows=15)
+testdata_raw=np.loadtxt('./topsample_test_tau.dat',delimiter=',',skiprows=15)
 
 alldata=np.concatenate((traindata_raw,valdata_raw,testdata_raw))
 # Smear masses by a gaussian to degrade the power of the mass variable
