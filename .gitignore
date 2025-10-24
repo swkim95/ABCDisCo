@@ -1,0 +1,5 @@
+script/runs/*
+QNN_script/runs/*
+ANO_QNN_script/runs/*
+doubleQNN_script/runs/*
+doubleDisCo_script/runs/*
