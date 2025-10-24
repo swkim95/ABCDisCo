@@ -10,9 +10,9 @@
 #SBATCH --gpus-per-task=1
 #SBATCH --array=0-575%2
 #SBATCH -L scratch,cfs
-#SBATCH -D $SCRATCH/ABCDisCo
-#SBATCH -o $SCRATCH/ABCDisCo/slurm_log/qnn/output/%x-%A_%a.out
-#SBATCH -e $SCRATCH/ABCDisCo/slurm_log/qnn/error/%x-%A_%a.err
+#SBATCH -D /pscratch/sd/s/sungwon/ABCDisCo
+#SBATCH -o /pscratch/sd/s/sungwon/ABCDisCo/slurm_log/qnn/output/%x-%A_%a.out
+#SBATCH -e /pscratch/sd/s/sungwon/ABCDisCo/slurm_log/qnn/error/%x-%A_%a.err
 
 # If your default account is not set, uncomment and set your project account:
 #SBATCH --account=m4138
@@ -59,12 +59,11 @@ VQC_DEPTH=${DEPTHS[$depth_idx]}
 RUN_LABEL="qnn_a${ALPHA}_lr${LR}_s${SMEAR}_nq${N_QUBIT}_d${VQC_DEPTH}"
 OUT_ROOT="runs/qnn"
 mkdir -p "${OUT_ROOT}"
-mkdir -p "$SCRATCH/ABCDisCo/slurm_log/qnn/output" "$SCRATCH/ABCDisCo/slurm_log/qnn/error"
 
 echo "Launching: python -u QNN_script/train_QNN_abcd_single.py --alpha ${ALPHA} --lr ${LR} --smear ${SMEAR} --qnn-n-qubits ${N_QUBIT} --qnn-vqc-depth ${VQC_DEPTH} --gpunum \"\${CUDA_VISIBLE_DEVICES}\" --run_label ${RUN_LABEL} --output_root ${OUT_ROOT}"
 srun --cpu-bind=cores --gpus=1 --gpu-bind=single:1 \
-  --output "$SCRATCH/ABCDisCo/slurm_log/qnn/output/${RUN_LABEL}_%A_%a.out" \
-  --error  "$SCRATCH/ABCDisCo/slurm_log/qnn/error/${RUN_LABEL}_%A_%a.err" \
+  --output "/pscratch/sd/s/sungwon/ABCDisCo/slurm_log/qnn/output/${RUN_LABEL}_%A_%a.out" \
+  --error  "/pscratch/sd/s/sungwon/ABCDisCo/slurm_log/qnn/error/${RUN_LABEL}_%A_%a.err" \
   -u bash -lc \
   "python -u QNN_script/train_QNN_abcd_single.py \
     --alpha ${ALPHA} \

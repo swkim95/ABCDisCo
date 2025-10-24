@@ -10,9 +10,9 @@
 #SBATCH --gpus-per-task=1
 #SBATCH --array=0-63%2
 #SBATCH -L scratch,cfs
-#SBATCH -D $SCRATCH/ABCDisCo
-#SBATCH -o $SCRATCH/ABCDisCo/slurm_log/dnn/output/%x-%A_%a.out
-#SBATCH -e $SCRATCH/ABCDisCo/slurm_log/dnn/error/%x-%A_%a.err
+#SBATCH -D /pscratch/sd/s/sungwon/ABCDisCo
+#SBATCH -o /pscratch/sd/s/sungwon/ABCDisCo/slurm_log/dnn/output/%x-%A_%a.out
+#SBATCH -e /pscratch/sd/s/sungwon/ABCDisCo/slurm_log/dnn/error/%x-%A_%a.err
 
 # If your default account is not set, uncomment and set your project account:
 #SBATCH --account=m4138
@@ -49,12 +49,11 @@ SMEAR=${SMEARS[$smear_idx]}
 RUN_LABEL="dnn_a${ALPHA}_lr${LR}_s${SMEAR}"
 OUT_ROOT="runs/dnn"
 mkdir -p "${OUT_ROOT}"
-mkdir -p "$SCRATCH/ABCDisCo/slurm_log/dnn/output" "$SCRATCH/ABCDisCo/slurm_log/dnn/error"
 
 echo "Launching: python -u script/train_abcd_single.py --alpha ${ALPHA} --lr ${LR} --smear ${SMEAR} --gpunum \"\${CUDA_VISIBLE_DEVICES}\" --run_label ${RUN_LABEL} --output_root ${OUT_ROOT}"
 srun --cpu-bind=cores --gpus=1 --gpu-bind=single:1 \
-  --output "$SCRATCH/ABCDisCo/slurm_log/dnn/output/${RUN_LABEL}_%A_%a.out" \
-  --error  "$SCRATCH/ABCDisCo/slurm_log/dnn/error/${RUN_LABEL}_%A_%a.err" \
+  --output "/pscratch/sd/s/sungwon/ABCDisCo/slurm_log/dnn/output/${RUN_LABEL}_%A_%a.out" \
+  --error  "/pscratch/sd/s/sungwon/ABCDisCo/slurm_log/dnn/error/${RUN_LABEL}_%A_%a.err" \
   -u bash -lc \
   "python -u script/train_abcd_single.py \
     --alpha ${ALPHA} \
