@@ -33,3 +33,50 @@ This repository supports research into quantum machine learning (QML) and quantu
 - When proposing new research directions, outline potential benefits, experimental considerations, and possible systematic uncertainties relevant to CMS-like experiments.
 
 Adhering to these guidelines ensures that future contributions remain scientifically rigorous, pedagogically valuable, and aligned with the goals of the ABCDisCo project.
+
+
+## ABCD Definitions (Project Standard)
+
+This project adopts a precise, ABCDisCo-consistent definition of regions and efficiencies for both Single-DisCo and Double-DisCo evaluations. Unless explicitly stated otherwise, all counts are to be interpreted as weighted event counts.
+
+### Variables and use cases
+- Single-DisCo (files `script/train_abcd_single.py`, `QNN_script/train_QNN_abcd_single.py`):
+  - f: classifier score from the DNN/QNN (x-axis)
+  - g: m_hat = 1 - |m_jet - m_top| / m_top (y-axis)
+- Double-DisCo (files `doubleDisCo_script/train_abcd_double.py`, `doubleQNN_script/train_QNN_abcd_double.py`):
+  - f: score of the first classifier (x-axis)
+  - g: score of the second classifier (y-axis)
+
+### Regions (ABCD)
+- A (SR): pass both cuts → (f ≥ f_thr) and (g ≥ g_thr)
+- B (CR): pass f, fail g → (f ≥ f_thr) and (g < g_thr)
+- C (CR): fail f, pass g → (f < f_thr) and (g ≥ g_thr)
+- D (CR): fail both → (f < f_thr) and (g < g_thr)
+
+### Efficiencies
+Let N_S(·) and N_B(·) denote weighted counts of signal and background, respectively, in the specified region(s). Let N_S(all) and N_B(all) denote the total weighted counts in the split under consideration.
+
+- Signal efficiency of f:
+  - ε_S(f) = [N_S(A) + N_S(B)] / N_S(all)
+- Signal efficiency of g:
+  - ε_S(g) = [N_S(A) + N_S(C)] / N_S(all)
+- Background efficiency of f:
+  - ε_B(f) = [N_B(A) + N_B(B)] / N_B(all)
+  - Using the ABCD independence assumption for background, an equivalent estimator is:
+    ε_B(f) = N_B(A) / [N_B(A) + N_B(C)]
+- Background efficiency of g:
+  - ε_B(g) = [N_B(A) + N_B(C)] / N_B(all)
+  - Equivalently: ε_B(g) = N_B(A) / [N_B(A) + N_B(B)]
+
+Background rejection is defined as 1/ε_B(·) for the corresponding variable.
+
+### Signal contamination per region
+For i ∈ {A, B, C, D}, define:
+- δ_i = N_S(i) / N_B(i)
+
+### Normalized (relative) signal contamination
+- δ_rel = (δ_B + δ_C - δ_D) / δ_A
+
+Notes:
+- These definitions follow ABCDisCo: T. Aarrestad et al., “ABCDisCo: Automating the ABCD Method with Machine Learning,” Eur. Phys. J. C 81, 256 (2021), arXiv:2007.14400.
+- When event weights are unity, the formulas reduce to simple event fractions.

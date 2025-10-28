@@ -46,6 +46,23 @@ class DNNclassifier(nn.Module):
         x = F.relu(x)
         return self.classifier(x)
 
+# Small DNN model that matches parameter size to HybridQNN model
+class DNNclassifier_matching_HybridQNN(nn.Module):
+    def __init__(self, ninput: int = 11, numout: int = 2, width: int = 30):
+        super(DNNclassifier_matching_HybridQNN, self).__init__()
+        self.fc1 = nn.Linear(ninput, width)
+        self.bn1 = nn.BatchNorm1d(width)
+        self.fc2 = nn.Linear(width, width)
+        self.classifier = nn.Linear(width, numout)
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.bn1(x)
+        x = F.relu(x)
+        x = self.fc2(x)
+        x = F.relu(x)
+        return self.classifier(x)
+
 class DNNclassifier_small(nn.Module):
     """
     ResNext optimized for the Cifar dataset, as specified in
@@ -59,12 +76,12 @@ class DNNclassifier_small(nn.Module):
         super(DNNclassifier_small, self).__init__()
 
 
-        self.dense_1 = nn.Linear(ninput, 32)
+        self.dense_1 = nn.Linear(ninput, 16)
         self.bn2 = nn.BatchNorm1d(ninput)
-        self.bn64 = nn.BatchNorm1d(32)
-        self.dense_2 = nn.Linear(32, 32)
-        self.dense_3 = nn.Linear(32, 32)
-        self.classifier = nn.Linear(32, numout)
+        self.bn64 = nn.BatchNorm1d(16)
+        self.dense_2 = nn.Linear(16, 16)
+        self.dense_3 = nn.Linear(16, 16)
+        self.classifier = nn.Linear(16, numout)
         init.kaiming_normal(self.classifier.weight)
 
         for key in self.state_dict():

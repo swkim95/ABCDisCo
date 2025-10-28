@@ -570,6 +570,18 @@ def compute_abcd_metrics_with_mhat(scores: np.ndarray, labels: np.ndarray, weigh
     closure = pred_bg / (A_bg + eps)
     tf_BD = B_bg / (D_bg + eps)
     tf_CD = C_bg / (D_bg + eps)
+
+    # Signal contamination per region δ_i = N_S(i) / N_B(i)
+    A_sig = float(np.sum(w[A & s_mask]))
+    B_sig = float(np.sum(w[B & s_mask]))
+    C_sig = float(np.sum(w[C & s_mask]))
+    D_sig = float(np.sum(w[D & s_mask]))
+    delta_A = A_sig / (A_bg + eps)
+    delta_B = B_sig / (B_bg + eps)
+    delta_C = C_sig / (C_bg + eps)
+    delta_D = D_sig / (D_bg + eps)
+    # Normalized (relative) contamination
+    delta_rel = (delta_B + delta_C - delta_D) / (delta_A + eps)
     # Classification side summaries at this cut
     cls = compute_bg_eff_rej_contamination(scores, labels, weights, cut)
     return {
@@ -584,6 +596,11 @@ def compute_abcd_metrics_with_mhat(scores: np.ndarray, labels: np.ndarray, weigh
         "tf_B_over_D": tf_BD,
         "tf_C_over_D": tf_CD,
         "cls_at_cut": cls,
+        "delta_A": delta_A,
+        "delta_B": delta_B,
+        "delta_C": delta_C,
+        "delta_D": delta_D,
+        "delta_rel": delta_rel,
         "region_masks": {"A": A, "B": B, "C": C, "D": D},
     }
 
@@ -1117,6 +1134,12 @@ def main() -> None:
                 row[f"{split_name}_inv_jsd_{wp}"] = j["inv_jsd"]
                 row[f"{split_name}_jsd_{wp}"] = j["jsd"]
                 row[f"{split_name}_b_rej_jsd_{wp}"] = j["b_rej"]
+                # Signal contamination metrics per region and normalized
+                row[f"{split_name}_deltaA_{wp}"] = ab.get("delta_A", float("nan"))
+                row[f"{split_name}_deltaB_{wp}"] = ab.get("delta_B", float("nan"))
+                row[f"{split_name}_deltaC_{wp}"] = ab.get("delta_C", float("nan"))
+                row[f"{split_name}_deltaD_{wp}"] = ab.get("delta_D", float("nan"))
+                row[f"{split_name}_delta_rel_{wp}"] = ab.get("delta_rel", float("nan"))
             # Accuracy-style metrics
             m = split_metrics[split_name]["metrics"]
             row[f"{split_name}_accuracy"] = m["accuracy"]
@@ -1258,6 +1281,25 @@ def main() -> None:
         plt.xlabel("Epoch"); plt.ylabel("Closure N_pred/N_true"); plt.title("ABCD closure vs epoch (εS=10/30/50%)")
         plt.legend(ncol=2); plt.grid(True, alpha=0.3)
         plt.tight_layout(); plt.savefig(hist_linear_dir / "closure_vs_epoch.png"); plt.yscale("log"); plt.savefig(hist_log_dir / "closure_vs_epoch_log.png"); plt.close()
+
+        # Normalized signal contamination δ_rel vs epoch (εS=10/30/50%)
+        plt.figure(figsize=(8,5))
+        for wp, style in [("10","--"),("30","-"),("50",":")]:
+            plt.plot(x, hist_df.get(f"train_delta_rel_{wp}", np.nan), color="C0", linestyle=style, label=f"train δ_rel ({wp}%)")
+            plt.plot(x, hist_df.get(f"val_delta_rel_{wp}", np.nan), color="C1", linestyle=style, linewidth=2, label=f"val δ_rel ({wp}%)")
+        plt.xlabel("Epoch"); plt.ylabel("δ_rel"); plt.title("Normalized signal contamination δ_rel vs epoch (εS=10/30/50%)")
+        plt.legend(ncol=2); plt.grid(True, alpha=0.3)
+        plt.tight_layout(); plt.savefig(hist_linear_dir / "delta_rel_vs_epoch.png"); plt.yscale("log"); plt.savefig(hist_log_dir / "delta_rel_vs_epoch_log.png"); plt.close()
+
+        # Per-region signal contamination δ_A/B/C/D vs epoch
+        for region, key in [("A", "deltaA"), ("B", "deltaB"), ("C", "deltaC"), ("D", "deltaD")]:
+            plt.figure(figsize=(8,5))
+            for wp, style in [("10","--"),("30","-"),("50",":")]:
+                plt.plot(x, hist_df.get(f"train_{key}_{wp}", np.nan), color="C0", linestyle=style, label=f"train δ_{region} ({wp}%)")
+                plt.plot(x, hist_df.get(f"val_{key}_{wp}", np.nan), color="C1", linestyle=style, linewidth=2, label=f"val δ_{region} ({wp}%)")
+            plt.xlabel("Epoch"); plt.ylabel(f"δ_{region}"); plt.title(f"Signal contamination δ_{region} vs epoch (εS=10/30/50%)")
+            plt.legend(ncol=2); plt.grid(True, alpha=0.3)
+            plt.tight_layout(); plt.savefig(hist_linear_dir / f"delta_{region}_vs_epoch.png"); plt.yscale("log"); plt.savefig(hist_log_dir / f"delta_{region}_vs_epoch_log.png"); plt.close()
     except Exception as e:
         print(f"Failed to render history plots: {e}")
 

@@ -559,6 +559,18 @@ def compute_abcd_metrics_scan(scores_f: np.ndarray, scores_g: np.ndarray, labels
         b_pass = float(np.sum(w[(scores_f >= cut_f) & (scores_g >= cut_g) & b_mask]))
         b_eff = b_pass / b_tot
         b_rej = 1.0 / max(b_eff, eps)
+        # Signal contamination per region δ_i = N_S(i)/N_B(i)
+        s_mask = labels > 0.5
+        A = y["A"]; B = y["B"]; C = y["C"]; D = y["D"]
+        A_sig = float(np.sum(w[A & s_mask]))
+        B_sig = float(np.sum(w[B & s_mask]))
+        C_sig = float(np.sum(w[C & s_mask]))
+        D_sig = float(np.sum(w[D & s_mask]))
+        delta_A = A_sig / (A_bg + eps)
+        delta_B = B_sig / (B_bg + eps)
+        delta_C = C_sig / (C_bg + eps)
+        delta_D = D_sig / (D_bg + eps)
+        delta_rel = (delta_B + delta_C - delta_D) / (delta_A + eps)
         key = (abs(closure - 1.0), -b_rej)
         if key < best_key:
             best_key = key
@@ -573,6 +585,11 @@ def compute_abcd_metrics_scan(scores_f: np.ndarray, scores_g: np.ndarray, labels
                 "closure": closure,
                 "b_eff_2d": b_eff,
                 "b_rej_2d": b_rej,
+                "delta_A": delta_A,
+                "delta_B": delta_B,
+                "delta_C": delta_C,
+                "delta_D": delta_D,
+                "delta_rel": delta_rel,
                 "region_masks": {"A": y["A"], "B": y["B"], "C": y["C"], "D": y["D"]},
             }
     return best_payload
@@ -1065,6 +1082,12 @@ def main() -> None:
                 row[f"{split_name}_inv_jsd_fg_{wp}"] = j["inv_jsd"]
                 row[f"{split_name}_jsd_fg_{wp}"] = j["jsd"]
                 row[f"{split_name}_b_rej_jsd_fg_{wp}"] = j["b_rej"]
+                # Per-region signal contamination and normalized (2D ABCD)
+                row[f"{split_name}_deltaA_{wp}"] = ab.get("delta_A", float("nan"))
+                row[f"{split_name}_deltaB_{wp}"] = ab.get("delta_B", float("nan"))
+                row[f"{split_name}_deltaC_{wp}"] = ab.get("delta_C", float("nan"))
+                row[f"{split_name}_deltaD_{wp}"] = ab.get("delta_D", float("nan"))
+                row[f"{split_name}_delta_rel_{wp}"] = ab.get("delta_rel", float("nan"))
 
         history_rows.append(row)
 
@@ -1197,6 +1220,25 @@ def main() -> None:
         plt.xlabel("Epoch"); plt.ylabel("Closure N_pred/N_true"); plt.title("ABCD closure (2D f,g) vs epoch (εS=10/30/50%)")
         plt.legend(ncol=2); plt.grid(True, alpha=0.3)
         plt.tight_layout(); plt.savefig(dirs["plots_history"] / "closure_vs_epoch.png"); plt.yscale("log"); plt.savefig(dirs["plots_history"] / "closure_vs_epoch_log.png"); plt.close()
+        
+        # Normalized signal contamination δ_rel vs epoch (εS=10/30/50%) [2D ABCD]
+        plt.figure(figsize=(8,5))
+        for wp, style in [("10","--"),("30","-"),("50",":")]:
+            plt.plot(x, hist_df.get(f"train_delta_rel_{wp}", np.nan), color="C0", linestyle=style, label=f"train δ_rel ({wp}%)")
+            plt.plot(x, hist_df.get(f"val_delta_rel_{wp}", np.nan), color="C1", linestyle=style, linewidth=2, label=f"val δ_rel ({wp}%)")
+        plt.xlabel("Epoch"); plt.ylabel("δ_rel"); plt.title("Normalized signal contamination δ_rel (2D) vs epoch (εS=10/30/50%)")
+        plt.legend(ncol=2); plt.grid(True, alpha=0.3)
+        plt.tight_layout(); plt.savefig(dirs["plots_history"] / "delta_rel_vs_epoch.png"); plt.yscale("log"); plt.savefig(dirs["plots_history"] / "delta_rel_vs_epoch_log.png"); plt.close()
+
+        # Per-region signal contamination δ_A/B/C/D vs epoch [2D ABCD]
+        for region, key in [("A", "deltaA"), ("B", "deltaB"), ("C", "deltaC"), ("D", "deltaD")]:
+            plt.figure(figsize=(8,5))
+            for wp, style in [("10","--"),("30","-"),("50",":")]:
+                plt.plot(x, hist_df.get(f"train_{key}_{wp}", np.nan), color="C0", linestyle=style, label=f"train δ_{region} ({wp}%)")
+                plt.plot(x, hist_df.get(f"val_{key}_{wp}", np.nan), color="C1", linestyle=style, linewidth=2, label=f"val δ_{region} ({wp}%)")
+            plt.xlabel("Epoch"); plt.ylabel(f"δ_{region}"); plt.title(f"Signal contamination δ_{region} (2D) vs epoch (εS=10/30/50%)")
+            plt.legend(ncol=2); plt.grid(True, alpha=0.3)
+            plt.tight_layout(); plt.savefig(dirs["plots_history"] / f"delta_{region}_vs_epoch.png"); plt.yscale("log"); plt.savefig(dirs["plots_history"] / f"delta_{region}_vs_epoch_log.png"); plt.close()
     except Exception as e:
         print(f"Failed to render history plots: {e}")
 
