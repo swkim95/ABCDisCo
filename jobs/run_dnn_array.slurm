@@ -8,7 +8,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --gpus-per-task=1
-#SBATCH --array=0-63%2
+#SBATCH --array=0-63
 #SBATCH -L scratch,cfs
 #SBATCH -D /pscratch/sd/s/sungwon/ABCDisCo
 #SBATCH -o /pscratch/sd/s/sungwon/ABCDisCo/slurm_log/dnn/output/%x-%A_%a.out
@@ -61,7 +61,6 @@ srun --cpu-bind=cores --gpus=1 --gpu-bind=single:1 \
     --smear ${SMEAR} \
     --gpunum \"\${CUDA_VISIBLE_DEVICES}\" \
     --run_label ${RUN_LABEL} \
-    --output_root ${OUT_ROOT} \
-    --test --epochs 1"
+    --output_root ${OUT_ROOT}"
 
 

@@ -2,13 +2,13 @@
 
 #SBATCH -J abcd-qnn
 #SBATCH -C gpu
-#SBATCH -q regular
-#SBATCH -t 14:00:00
+#SBATCH -q shared
+#SBATCH -t 10:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=32
 #SBATCH --gpus-per-task=1
-#SBATCH --array=0-575%2
+#SBATCH --array=0-575%72
 #SBATCH -L scratch,cfs
 #SBATCH -D /pscratch/sd/s/sungwon/ABCDisCo
 #SBATCH -o /pscratch/sd/s/sungwon/ABCDisCo/slurm_log/qnn/output/%x-%A_%a.out
@@ -61,7 +61,7 @@ OUT_ROOT="runs/qnn"
 mkdir -p "${OUT_ROOT}"
 
 echo "Launching: python -u QNN_script/train_QNN_abcd_single.py --alpha ${ALPHA} --lr ${LR} --smear ${SMEAR} --qnn-n-qubits ${N_QUBIT} --qnn-vqc-depth ${VQC_DEPTH} --gpunum \"\${CUDA_VISIBLE_DEVICES}\" --run_label ${RUN_LABEL} --output_root ${OUT_ROOT}"
-srun --cpu-bind=cores --gpus=1 --gpu-bind=single:1 \
+srun --cpu-bind=cores -c ${SLURM_CPUS_PER_TASK} --gpus=1 --gpu-bind=single:1 \
   --output "/pscratch/sd/s/sungwon/ABCDisCo/slurm_log/qnn/output/${RUN_LABEL}_%A_%a.out" \
   --error  "/pscratch/sd/s/sungwon/ABCDisCo/slurm_log/qnn/error/${RUN_LABEL}_%A_%a.err" \
   -u bash -lc \
@@ -73,7 +73,5 @@ srun --cpu-bind=cores --gpus=1 --gpu-bind=single:1 \
     --qnn-vqc-depth ${VQC_DEPTH} \
     --gpunum \"\${CUDA_VISIBLE_DEVICES}\" \
     --run_label ${RUN_LABEL} \
-    --output_root ${OUT_ROOT} \
-    --test --epochs 1"
-
+    --output_root ${OUT_ROOT}"
 
